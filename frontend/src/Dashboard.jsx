@@ -512,10 +512,10 @@ export default function Dashboard() {
 
         {/* User Profile */}
         <div className="user-profile">
-          <div className="avatar">AT</div>
+          <div className="avatar">YT</div>
           <div className="user-info">
-            <span className="user-name">Dr. Alan Turing</span>
-            <span className="user-role">Administrator</span>
+            <span className="user-name">Yash Tomar</span>
+            <span className="user-role">Student</span>
           </div>
         </div>
       </aside>
