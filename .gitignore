@@ -1,0 +1,18 @@
+# Ignore environments
+myenv/
+
+# Node modules
+node_modules/
+
+# Dataset
+SpaceNet_20_Samples/
+
+# Model files
+*.pth
+
+# Large images / outputs
+*.png
+
+# Geo + tif test data
+*.tif
+*.geojson
