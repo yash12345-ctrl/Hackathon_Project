@@ -1,10 +1,9 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Polygon, Popup, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 /* ─── OSM Overpass Fetching ─────────────────────────────── */
-// Multiple endpoints — tried in order on failure
 const OVERPASS_ENDPOINTS = [
   'https://overpass.private.coffee/api/interpreter',
   'https://overpass-api.de/api/interpreter',
@@ -13,14 +12,10 @@ const OVERPASS_ENDPOINTS = [
   'https://overpass.openstreetmap.ru/api/interpreter',
 ];
 
-// Smaller bbox = faster query, fewer timeouts
-// Rotterdam city centre ~500m radius
 const ROTTERDAM_BBOX = [51.892, 4.467, 51.924, 4.500];
 
 async function fetchOSMBuildings(bbox) {
   const [south, west, north, east] = bbox;
-  // [maxsize] caps response; [out:json][timeout:25] keeps it quick
-  // limit 800 ways to avoid 504s on busy servers
   const query = `
     [out:json][timeout:25][maxsize:16000000];
     (
@@ -36,7 +31,7 @@ async function fetchOSMBuildings(bbox) {
   for (const endpoint of OVERPASS_ENDPOINTS) {
     try {
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 28000); // 28s client timeout
+      const timer = setTimeout(() => ctrl.abort(), 28000); 
       const resp = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -50,14 +45,12 @@ async function fetchOSMBuildings(bbox) {
       return parseOSMData(data);
     } catch (err) {
       lastErr = err;
-      // Try next endpoint
     }
   }
   throw new Error(`All Overpass endpoints failed: ${lastErr?.message}`);
 }
 
 function parseOSMData(data) {
-  // Build node lookup
   const nodes = {};
   data.elements.forEach(el => {
     if (el.type === 'node') nodes[el.id] = [el.lat, el.lon];
@@ -70,15 +63,9 @@ function parseOSMData(data) {
     if (coords.length < 3) return;
 
     const tags = el.tags;
-
-    // Height estimation priority:
-    // 1. Explicit height tag (most accurate)
-    // 2. building:levels * 3.0m per floor
-    // 3. Type-based default levels (smart estimate)
     const heightTagged = parseFloat(tags['building:height'] || tags['height']);
     const levels = parseInt(tags['building:levels']);
 
-    // Type-based default floors when no data available
     const TYPE_LEVELS = {
       house: 2, residential: 3, apartments: 5, detached: 2, terrace: 2,
       semidetached_house: 2, bungalow: 1, cabin: 1, farm: 1,
@@ -113,14 +100,9 @@ function parseOSMData(data) {
       heightSource = 'Estimated (type)';
     }
 
-    // Year built
     const rawDate = tags['start_date'] || tags['year_of_construction'] || tags['construction_date'];
     const year = rawDate ? parseInt(rawDate.substring(0, 4)) : null;
-
-    // Area (Shoelace, approximate square meters)
     const area = calcPolygonArea(coords);
-
-    // Building use / type label
     const typeRaw = tags.building === 'yes' ? (tags.amenity || tags.shop || tags.office || 'generic') : tags.building;
     const typeLabel = capitalize(typeRaw.replace(/_/g, ' '));
 
@@ -145,8 +127,7 @@ function parseOSMData(data) {
 }
 
 function calcPolygonArea(coords) {
-  // Approximate m² using Shoelace on (lat, lon) → convert to meters
-  const R = 6378137; // Earth radius in meters
+  const R = 6378137; 
   let area = 0;
   const n = coords.length;
   for (let i = 0; i < n; i++) {
@@ -218,13 +199,6 @@ const legendItems = [
   { label: 'Unknown', color: '#3A5CE8' },
 ];
 
-/* ─── Map Reset Component ─────────────────────────────────── */
-function MapReset({ center, zoom }) {
-  const map = useMap();
-  useEffect(() => { map.setView(center, zoom); }, [center, zoom]);
-  return null;
-}
-
 /* ─── Global Styles ─────────────────────────────────────────── */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
@@ -241,12 +215,12 @@ const CSS = `
   /* ── SIDEBAR ── */
   .sidebar {
     width: 240px; flex-shrink: 0;
-    background: #111318; border-right: 1px solid #1E2130;
+    background: #FFFFFF; border-right: 1px solid #E2E8F0;
     display: flex; flex-direction: column; z-index: 1000;
   }
   .brand {
     padding: 1.5rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;
-    border-bottom: 1px solid #1E2130;
+    border-bottom: 1px solid #E2E8F0;
   }
   .brand-icon {
     width: 34px; height: 34px; background: #3A5CE8; border-radius: 8px;
@@ -254,8 +228,8 @@ const CSS = `
     color: #fff; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.05em;
     font-family: 'DM Mono', monospace;
   }
-  .brand-name { font-size: 0.9rem; font-weight: 700; color: #E2E8F0; letter-spacing: 0.04em; }
-  .brand-sub { font-size: 0.65rem; color: #4A5568; font-family: 'DM Mono', monospace; margin-top: 1px; }
+  .brand-name { font-size: 0.9rem; font-weight: 700; color: #1A202C; letter-spacing: 0.04em; }
+  .brand-sub { font-size: 0.65rem; color: #718096; font-family: 'DM Mono', monospace; margin-top: 1px; }
 
   .nav { flex: 1; padding: 1.5rem 0.75rem; display: flex; flex-direction: column; gap: 2px; }
   .nav-item {
@@ -263,20 +237,20 @@ const CSS = `
     border-radius: 8px; color: #4A5568; text-decoration: none;
     font-size: 0.82rem; font-weight: 600; transition: all 0.15s;
   }
-  .nav-item:hover { background: #1A1F2E; color: #A0AEC0; }
-  .nav-item.active { background: rgba(58, 92, 232, 0.15); color: #7C9EFF; }
+  .nav-item:hover { background: #EDF2F7; color: #2D3748; }
+  .nav-item.active { background: rgba(58, 92, 232, 0.15); color: #3A5CE8; }
   .nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
 
   /* Stats sidebar footer */
   .sidebar-stats {
-    padding: 1rem; border-top: 1px solid #1E2130; display: flex; flex-direction: column; gap: 8px;
+    padding: 1rem; border-top: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 8px;
   }
   .stat-chip {
-    background: #1A1F2E; border-radius: 8px; padding: 8px 10px;
+    background: #EDF2F7; border-radius: 8px; padding: 8px 10px;
     display: flex; justify-content: space-between; align-items: center;
   }
-  .stat-chip-label { font-size: 0.68rem; color: #4A5568; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.06em; }
-  .stat-chip-value { font-size: 0.95rem; font-weight: 700; color: #7C9EFF; font-family: 'DM Mono', monospace; }
+  .stat-chip-label { font-size: 0.68rem; color: #718096; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-chip-value { font-size: 0.95rem; font-weight: 700; color: #3A5CE8; font-family: 'DM Mono', monospace; }
 
   /* ── MAP AREA ── */
   .map-area { flex: 1; position: relative; }
@@ -401,7 +375,6 @@ export default function AdvanceGIS() {
   const [error, setError] = useState(null);
   const [layers, setLayers] = useState({ optical: true, sar: false, footprints: true, heatmap: true });
 
-  // Centre matches the updated ROTTERDAM_BBOX (city centre)
   const rotterdamCenter = [51.908, 4.483];
 
   const loadBuildings = useCallback(async (keepExisting = false) => {
@@ -423,9 +396,8 @@ export default function AdvanceGIS() {
     try {
       const data = await fetchOSMBuildings(ROTTERDAM_BBOX);
       setBuildings(data);
-      setError(null); // clear any previous error on success
+      setError(null); 
     } catch (err) {
-      // Keep existing buildings visible — only show error banner
       setError(err.message);
     } finally {
       clearInterval(msgTimer);
@@ -447,7 +419,7 @@ export default function AdvanceGIS() {
   const heightClass = (b) => {
     if (b.heightSource === 'Tagged') return 'green';
     if (b.heightSource === 'Estimated (floors)') return 'yellow';
-    if (b.heightSource === 'Estimated (type)') return 'purple'; // accent is fine
+    if (b.heightSource === 'Estimated (type)') return 'purple'; 
     return '';
   };
 
@@ -460,24 +432,12 @@ export default function AdvanceGIS() {
         <div className="brand">
           <div className="brand-icon">AI</div>
           <div>
-            <div className="brand-name">SpaceNet Core</div>
+            <div className="brand-name">Geo Fusion AI</div>
             <div className="brand-sub">OSM · Rotterdam</div>
           </div>
         </div>
 
         <nav className="nav">
-          <Link to="/" className="nav-item">
-            <svg className="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            Overview
-          </Link>
-          <Link to="/inference" className="nav-item">
-            <svg className="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            Inference Feed
-          </Link>
           <Link to="/advance" className="nav-item active">
             <svg className="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -651,13 +611,6 @@ export default function AdvanceGIS() {
                           {building.heightSource}
                         </span>
                       </div>
-                      {/* Levels */}
-                      {building.levels && (
-                        <div className="popup-row">
-                          <span className="popup-label">floors</span>
-                          <span className="popup-value">{building.levels}</span>
-                        </div>
-                      )}
                       <hr className="popup-divider" />
                       {/* Area */}
                       <div className="popup-row">

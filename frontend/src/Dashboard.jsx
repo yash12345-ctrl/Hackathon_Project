@@ -417,8 +417,8 @@ export default function Dashboard() {
         <div className="brand-logo">
           <div className="brand-icon">AI</div>
           <div className="brand-text-wrap">
-            <span className="brand-name">SpaceNet Core</span>
-            <span className="brand-tag">v2.4.1 · Live</span>
+            <span className="brand-name">Geo Fusion AI</span>
+            <span className="brand-tag">Live</span>
           </div>
         </div>
 
