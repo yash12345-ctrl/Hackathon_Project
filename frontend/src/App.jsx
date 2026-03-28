@@ -878,7 +878,7 @@ function LandingPage() {
           GeoFusion AI
         </div>
         <ul className="nav-links">
-          <li><a href="#features">Track Requirements</a></li>
+          <li><a href="#features"></a></li>
           <li><a href="#how">Workflow</a></li>
         </ul>
         <Link to="/dashboard" className="nav-cta">View Results →</Link>
@@ -889,7 +889,7 @@ function LandingPage() {
         <div className="hero-left">
           <div className="badge">
             <span className="badge-pulse" />
-            Track 3: Multi-Sensor Fusion
+             Multi-Sensor Fusion
           </div>
 
           <h1 className="hero-title">
@@ -1059,7 +1059,7 @@ function LandingPage() {
 
       {/* FOOTER */}
       <footer>
-        <span className="footer-copy">© 2026 GeoFusion AI · Track 3 Submission</span>
+        <span className="footer-copy">© 2026 GeoFusion AI ·</span>
         <div className="footer-links">
           <a href="#">Kaggle Dataset</a>
           <a href="#">Methodology</a>
