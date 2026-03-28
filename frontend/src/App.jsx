@@ -921,16 +921,14 @@ function LandingPage() {
 
           <div className="hero-stats">
             <div className="stat-item">
-              <span className="stat-number">₹<Counter target={50000} /></span>
-              <span className="stat-label">Prize Pool</span>
+              
             </div>
             <div className="stat-item">
-              <span className="stat-number">5-10</span>
-              <span className="stat-label">Target Buildings</span>
+              
             </div>
             <div className="stat-item">
-              <span className="stat-number">2</span>
-              <span className="stat-label">Sensor Modalities</span>
+              
+              
             </div>
           </div>
         </div>
